@@ -23,7 +23,15 @@ const PLAYERS_OBJECT = {}
 socket.on('sync_players', ({ payload }) => {
   for (const id of Object.keys(payload)) {
     if (!(id in PLAYERS_OBJECT)) {
-      PLAYERS_OBJECT[id] = new Player({ ...payload[id], radius: 10 * DEVICE_PIXEL_RATIO })
+      PLAYERS_OBJECT[id] = new Player({
+        ...payload[id],
+        radius: 10 * DEVICE_PIXEL_RATIO
+      })
+    } else {
+      PLAYERS_OBJECT[id] = new Player({
+        ...payload[id],
+        radius: 10 * DEVICE_PIXEL_RATIO
+      })
     }
   }
   // SYNC FRONTEND PLAYERS WITH BACKEND PLAYERS
@@ -49,3 +57,29 @@ function animate() {
 }
 
 animate()
+
+// HANDLE MOVING
+window.addEventListener('keydown', (ev) => {
+  const playerId = socket.id
+  const player = PLAYERS_OBJECT[playerId]
+  if (!player) {
+    return
+  }
+  switch (ev.code) {
+    case 'KeyW':
+      socket.emit('keydown', { payload: 'KeyW' })
+      break
+    case 'KeyD':
+      socket.emit('keydown', { payload: 'KeyD' })
+      break
+    case 'KeyS':
+      socket.emit('keydown', { payload: 'KeyS' })
+      break
+    case 'KeyA':
+      socket.emit('keydown', { payload: 'KeyA' })
+      break
+    default:
+      break
+  }
+  animate()
+})
