@@ -18,7 +18,7 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html')
 })
 
-const PLAYERS = {}
+const PLAYERS_FRONTEND = {}
 
 // On User connection create PLAYER in PLAYER object with properties.
 // x, y, color,
@@ -26,20 +26,20 @@ const PLAYERS = {}
 // Notify all players in game.
 io.on('connection', (socket) => {
   console.log(socket.id, ' CONNECTED')
-  PLAYERS[socket.id] = {
+  PLAYERS_FRONTEND[socket.id] = {
     x: 600 * Math.random(),
     y: 600 * Math.random(),
-    color: 'yellow'
+    color: `hsl(${360 * Math.random()}, 100%, 50%)`
   }
 
-  io.emit('sync_players', { payload: PLAYERS })
+  io.emit('sync_players', { payload: PLAYERS_FRONTEND })
 
   socket.on('disconnect', (reason) => {
     console.log(socket.id, reason, ' DISCONNECTED')
     if (reason === 'transport close') {
     }
-    delete PLAYERS[socket.id]
-    io.emit('sync_players', { payload: PLAYERS })
+    delete PLAYERS_FRONTEND[socket.id]
+    io.emit('sync_players', { payload: PLAYERS_FRONTEND })
   })
 })
 

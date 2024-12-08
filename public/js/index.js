@@ -4,8 +4,10 @@ const socket = io()
 
 const scoreEl = document.querySelector('#scoreEl')
 
-canvas.width = innerWidth
-canvas.height = innerHeight
+const DEVICE_PIXEL_RATIO = window.devicePixelRatio || 1
+
+canvas.width = innerWidth * DEVICE_PIXEL_RATIO
+canvas.height = innerHeight * DEVICE_PIXEL_RATIO
 
 const x = canvas.width / 2
 const y = canvas.height / 2
@@ -21,7 +23,7 @@ const PLAYERS_OBJECT = {}
 socket.on('sync_players', ({ payload }) => {
   for (const id of Object.keys(payload)) {
     if (!(id in PLAYERS_OBJECT)) {
-      PLAYERS_OBJECT[id] = new Player({ ...payload[id], radius: 10, color: `hsl(${360 * Math.random()}, 100%, 50%)` })
+      PLAYERS_OBJECT[id] = new Player({ ...payload[id], radius: 10 * DEVICE_PIXEL_RATIO })
     }
   }
   // SYNC FRONTEND PLAYERS WITH BACKEND PLAYERS
@@ -30,7 +32,7 @@ socket.on('sync_players', ({ payload }) => {
       delete PLAYERS_OBJECT[key]
     }
   }
-  console.log(PLAYERS_OBJECT);
+  console.log(PLAYERS_OBJECT)
 
   animate()
 })
