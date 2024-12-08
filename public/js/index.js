@@ -28,10 +28,8 @@ socket.on('sync_players', ({ payload }) => {
         radius: 10 * DEVICE_PIXEL_RATIO
       })
     } else {
-      PLAYERS_OBJECT[id] = new Player({
-        ...payload[id],
-        radius: 10 * DEVICE_PIXEL_RATIO
-      })
+      PLAYERS_OBJECT[id].x = payload[id].x
+      PLAYERS_OBJECT[id].y = payload[id].y
     }
   }
   // SYNC FRONTEND PLAYERS WITH BACKEND PLAYERS

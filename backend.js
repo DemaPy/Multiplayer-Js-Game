@@ -64,19 +64,19 @@ io.on('connection', (socket) => {
       default:
         break
     }
-    console.log(player);
+    console.log(player)
     PLAYERS_BACKEND[playerId] = player
-    io.emit('sync_players', { payload: PLAYERS_BACKEND })
   })
 
-  io.emit('sync_players', { payload: PLAYERS_BACKEND })
+  setInterval(() => {
+    io.emit('sync_players', { payload: PLAYERS_BACKEND })
+  }, 15)
 
   socket.on('disconnect', (reason) => {
     console.log(socket.id, reason, ' DISCONNECTED')
     if (reason === 'transport close') {
     }
     delete PLAYERS_BACKEND[socket.id]
-    io.emit('sync_players', { payload: PLAYERS_BACKEND })
   })
 })
 
