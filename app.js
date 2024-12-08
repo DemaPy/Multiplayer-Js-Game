@@ -15,12 +15,25 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html')
 })
 
+const PLAYERS = {}
+
+// On User connection create PLAYER in PLAYER object with properties.
 io.on('connection', (socket) => {
   console.log(socket.id, ' CONNECTED')
+  PLAYERS[socket.id] = {
+    x: 200,
+    y: 700,
+    color: "yellow"
+  }
+  
+  io.emit("players", {payload: PLAYERS})
 
   socket.on('disconnect', () => {
     console.log(socket.id, ' DISCONNECTED')
+    delete PLAYERS[socket.id]
   })
+
+  console.log(PLAYERS);
 })
 
 server.listen(port, () => {
