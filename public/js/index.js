@@ -28,6 +28,7 @@ socket.on('sync_players', ({ payload }) => {
         radius: 10 * DEVICE_PIXEL_RATIO
       })
     } else {
+      // Update position for existing project
       PLAYERS_OBJECT[id].x = payload[id].x
       PLAYERS_OBJECT[id].y = payload[id].y
     }
@@ -38,8 +39,6 @@ socket.on('sync_players', ({ payload }) => {
       delete PLAYERS_OBJECT[key]
     }
   }
-  console.log(PLAYERS_OBJECT)
-
   animate()
 })
 let animationId
@@ -65,19 +64,24 @@ window.addEventListener('keydown', (ev) => {
   }
   switch (ev.code) {
     case 'KeyW':
+      player.y -= 5
       socket.emit('keydown', { payload: 'KeyW' })
       break
     case 'KeyD':
+      player.x += 5
       socket.emit('keydown', { payload: 'KeyD' })
       break
     case 'KeyS':
+      player.y += 5
       socket.emit('keydown', { payload: 'KeyS' })
       break
     case 'KeyA':
+      player.x -= 5
       socket.emit('keydown', { payload: 'KeyA' })
       break
     default:
       break
   }
+  PLAYERS_OBJECT[playerId] = player
   animate()
 })

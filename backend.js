@@ -47,7 +47,6 @@ io.on('connection', (socket) => {
     if (!player) {
       return
     }
-
     switch (keyCode) {
       case 'KeyW':
         player.y -= CONFIG.velocity
@@ -64,7 +63,6 @@ io.on('connection', (socket) => {
       default:
         break
     }
-    console.log(player)
     PLAYERS_BACKEND[playerId] = player
   })
 
