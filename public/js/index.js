@@ -53,8 +53,18 @@ socket.on('sync_players', ({ payload }) => {
         }
       } else {
         // Update position for other players
-        PLAYERS_OBJECT[id].x = BACKEND_PLAYER.x
-        PLAYERS_OBJECT[id].y = BACKEND_PLAYER.y
+        // But if player will have latency our movement for him will looks like teleportation.
+        // In order to fix it, we can use GSAP to move subject smoothly by filling GAP in moving values.
+
+        // PLAYERS_OBJECT[id].x = BACKEND_PLAYER.x
+        // PLAYERS_OBJECT[id].y = BACKEND_PLAYER.y
+
+        gsap.to(PLAYERS_OBJECT[id], {
+          x: BACKEND_PLAYER.x,
+          y: BACKEND_PLAYER.y,
+          duration: 0.015,
+          ease: 'linear'
+        })
       }
     }
   }
@@ -190,6 +200,13 @@ window.addEventListener('keydown', (ev) => {
       break
   }
   animate()
+})
+
+window.addEventListener('blur', (ev) => {
+  KEYS.w.pressed = false
+  KEYS.d.pressed = false
+  KEYS.s.pressed = false
+  KEYS.a.pressed = false
 })
 
 window.addEventListener('keyup', (ev) => {
