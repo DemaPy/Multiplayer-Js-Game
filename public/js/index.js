@@ -2,6 +2,11 @@ const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
 const socket = io()
 
+const playerInputs = []
+const CONFIG = {
+  velocity: 5
+}
+
 const scoreEl = document.querySelector('#scoreEl')
 
 const DEVICE_PIXEL_RATIO = window.devicePixelRatio || 1
@@ -22,15 +27,35 @@ const PLAYERS_OBJECT = {}
 // Listen to socket events
 socket.on('sync_players', ({ payload }) => {
   for (const id of Object.keys(payload)) {
+    const BACKEND_PLAYER = payload[id]
     if (!(id in PLAYERS_OBJECT)) {
       PLAYERS_OBJECT[id] = new Player({
-        ...payload[id],
+        ...BACKEND_PLAYER,
         radius: 10 * DEVICE_PIXEL_RATIO
       })
     } else {
-      // Update position for existing project
-      PLAYERS_OBJECT[id].x = payload[id].x
-      PLAYERS_OBJECT[id].y = payload[id].y
+      if (socket.id === BACKEND_PLAYER.id) {
+        // Update position for existing player
+        PLAYERS_OBJECT[id].x = BACKEND_PLAYER.x
+        PLAYERS_OBJECT[id].y = BACKEND_PLAYER.y
+
+        const lastAppliedKeyDown = playerInputs.findIndex((item) => {
+          return item.sequenceNumber === BACKEND_PLAYER.sequenceNumber
+        })
+
+        if (lastAppliedKeyDown !== -1) {
+          // Splice inputs and apply movements for player
+          playerInputs.splice(0, lastAppliedKeyDown + 1)
+          playerInputs.forEach((item) => {
+            PLAYERS_OBJECT[id].x = item.x
+            PLAYERS_OBJECT[id].y = item.y
+          })
+        }
+      } else {
+        // Update position for other players
+        PLAYERS_OBJECT[id].x = BACKEND_PLAYER.x
+        PLAYERS_OBJECT[id].y = BACKEND_PLAYER.y
+      }
     }
   }
   // SYNC FRONTEND PLAYERS WITH BACKEND PLAYERS
@@ -76,29 +101,69 @@ function getPlayer() {
   return player
 }
 
+// If some user will spam keyboard event to server
+// we will have latency, because server can't handle each keyboard event
+// every 15ms.
+
+// We will store player keyDown in playerInputs array with value to apply.
+// Also, need to store sequenceNumber in order to clice events that has been handled by server succesfully
+// sequenceNumber should be send to server and attached for every user in order to know at what sequence server applied keyDown event
+
+// When sync_players event fired from server,
+// we will slice playerInputs at sequenceNumber and apply events that has been applied from server.
+// Splice playerInputs up to events at sequenceNumber.
+let sequenceNumber = 0
 setInterval(() => {
   const player = getPlayer()
   if (!player) {
     return
   }
   if (KEYS.w.pressed) {
-    player.y -= 5
-    socket.emit('keydown', { payload: 'KeyW' })
+    sequenceNumber++
+    playerInputs.push({ sequenceNumber, x: 0, y: -CONFIG.velocity })
+    player.y -= CONFIG.velocity
+    socket.emit('keydown', {
+      payload: {
+        keyCode: 'KeyW',
+        sequenceNumber
+      }
+    })
   }
 
   if (KEYS.d.pressed) {
-    player.x += 5
-    socket.emit('keydown', { payload: 'KeyD' })
+    sequenceNumber++
+    playerInputs.push({ sequenceNumber, x: 0, x: CONFIG.velocity })
+    player.x += CONFIG.velocity
+    socket.emit('keydown', {
+      payload: {
+        keyCode: 'KeyD',
+        sequenceNumber
+      }
+    })
   }
 
   if (KEYS.s.pressed) {
-    player.y += 5
-    socket.emit('keydown', { payload: 'KeyS' })
+    sequenceNumber++
+    playerInputs.push({ sequenceNumber, x: 0, y: CONFIG.velocity })
+    player.y += CONFIG.velocity
+    socket.emit('keydown', {
+      payload: {
+        keyCode: 'KeyS',
+        sequenceNumber
+      }
+    })
   }
 
   if (KEYS.a.pressed) {
-    player.x -= 5
-    socket.emit('keydown', { payload: 'KeyA' })
+    sequenceNumber++
+    playerInputs.push({ sequenceNumber, x: 0, x: -CONFIG.velocity })
+    player.x -= CONFIG.velocity
+    socket.emit('keydown', {
+      payload: {
+        keyCode: 'KeyA',
+        sequenceNumber
+      }
+    })
   }
 }, 15)
 
@@ -124,7 +189,6 @@ window.addEventListener('keydown', (ev) => {
     default:
       break
   }
-  PLAYERS_OBJECT[playerId] = player
   animate()
 })
 
@@ -149,6 +213,5 @@ window.addEventListener('keyup', (ev) => {
     default:
       break
   }
-  PLAYERS_OBJECT[playerId] = player
   animate()
 })

@@ -28,7 +28,8 @@ function createPlayer() {
   return {
     x: 600 * Math.random(),
     y: 600 * Math.random(),
-    color: `hsl(${360 * Math.random()}, 100%, 50%)`
+    color: `hsl(${360 * Math.random()}, 100%, 50%)`,
+    sequenceNumber: 0
   }
 }
 
@@ -41,12 +42,13 @@ io.on('connection', (socket) => {
   PLAYERS_BACKEND[socket.id] = createPlayer()
 
   socket.on('keydown', ({ payload }) => {
-    const keyCode = payload
+    const { keyCode, sequenceNumber } = payload
     const playerId = socket.id
     const player = PLAYERS_BACKEND[playerId]
     if (!player) {
       return
     }
+    player.sequenceNumber = sequenceNumber
     switch (keyCode) {
       case 'KeyW':
         player.y -= CONFIG.velocity
