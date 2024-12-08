@@ -55,29 +55,96 @@ function animate() {
 
 animate()
 
-// HANDLE MOVING
-window.addEventListener('keydown', (ev) => {
+const KEYS = {
+  w: {
+    pressed: false
+  },
+  d: {
+    pressed: false
+  },
+  s: {
+    pressed: false
+  },
+  a: {
+    pressed: false
+  }
+}
+
+function getPlayer() {
   const playerId = socket.id
   const player = PLAYERS_OBJECT[playerId]
+  return player
+}
+
+setInterval(() => {
+  const player = getPlayer()
+  if (!player) {
+    return
+  }
+  if (KEYS.w.pressed) {
+    player.y -= 5
+    socket.emit('keydown', { payload: 'KeyW' })
+  }
+
+  if (KEYS.d.pressed) {
+    player.x += 5
+    socket.emit('keydown', { payload: 'KeyD' })
+  }
+
+  if (KEYS.s.pressed) {
+    player.y += 5
+    socket.emit('keydown', { payload: 'KeyS' })
+  }
+
+  if (KEYS.a.pressed) {
+    player.x -= 5
+    socket.emit('keydown', { payload: 'KeyA' })
+  }
+}, 15)
+
+// HANDLE MOVING
+window.addEventListener('keydown', (ev) => {
+  const player = getPlayer()
   if (!player) {
     return
   }
   switch (ev.code) {
     case 'KeyW':
-      player.y -= 5
-      socket.emit('keydown', { payload: 'KeyW' })
+      KEYS.w.pressed = true
       break
     case 'KeyD':
-      player.x += 5
-      socket.emit('keydown', { payload: 'KeyD' })
+      KEYS.d.pressed = true
       break
     case 'KeyS':
-      player.y += 5
-      socket.emit('keydown', { payload: 'KeyS' })
+      KEYS.s.pressed = true
       break
     case 'KeyA':
-      player.x -= 5
-      socket.emit('keydown', { payload: 'KeyA' })
+      KEYS.a.pressed = true
+      break
+    default:
+      break
+  }
+  PLAYERS_OBJECT[playerId] = player
+  animate()
+})
+
+window.addEventListener('keyup', (ev) => {
+  const player = getPlayer()
+  if (!player) {
+    return
+  }
+  switch (ev.code) {
+    case 'KeyW':
+      KEYS.w.pressed = false
+      break
+    case 'KeyD':
+      KEYS.d.pressed = false
+      break
+    case 'KeyS':
+      KEYS.s.pressed = false
+      break
+    case 'KeyA':
+      KEYS.a.pressed = false
       break
     default:
       break
