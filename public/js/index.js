@@ -2,6 +2,7 @@ const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
 const socket = io()
 
+const projectiles = []
 const playerInputs = []
 const CONFIG = {
   velocity: 5
@@ -34,11 +35,10 @@ socket.on('sync_players', ({ payload }) => {
         radius: 10 * DEVICE_PIXEL_RATIO
       })
     } else {
-      if (socket.id === BACKEND_PLAYER.id) {
+      if (socket.id === id) {
         // Update position for existing player
         PLAYERS_OBJECT[id].x = BACKEND_PLAYER.x
         PLAYERS_OBJECT[id].y = BACKEND_PLAYER.y
-
         const lastAppliedKeyDown = playerInputs.findIndex((item) => {
           return item.sequenceNumber === BACKEND_PLAYER.sequenceNumber
         })
@@ -85,6 +85,11 @@ function animate() {
   for (const id of Object.keys(PLAYERS_OBJECT)) {
     const player = PLAYERS_OBJECT[id]
     player.draw()
+  }
+
+  for (let index = projectiles.length - 1; index >= 0; index--) {
+    const line = projectiles[index];
+    line.update()
   }
 }
 

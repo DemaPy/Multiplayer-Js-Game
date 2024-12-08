@@ -40,6 +40,7 @@ function createPlayer() {
 io.on('connection', (socket) => {
   console.log(socket.id, ' CONNECTED')
   PLAYERS_BACKEND[socket.id] = createPlayer()
+  io.emit('sync_players', { payload: PLAYERS_BACKEND })
 
   socket.on('keydown', ({ payload }) => {
     const { keyCode, sequenceNumber } = payload
@@ -66,11 +67,13 @@ io.on('connection', (socket) => {
         break
     }
     PLAYERS_BACKEND[playerId] = player
+    io.emit('sync_players', { payload: PLAYERS_BACKEND })
+
   })
 
-  setInterval(() => {
-    io.emit('sync_players', { payload: PLAYERS_BACKEND })
-  }, 15)
+  // setInterval(() => {
+  //   io.emit('sync_players', { payload: PLAYERS_BACKEND })
+  // }, 15)
 
   socket.on('disconnect', (reason) => {
     console.log(socket.id, reason, ' DISCONNECTED')
