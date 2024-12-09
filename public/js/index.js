@@ -24,6 +24,15 @@ const y = canvas.height / 2
 // height / 2
 
 // Listen to socket events
+socket.on('connect', () => {
+  socket.emit('init_canvas', {
+    payload: {
+      width: canvas.width,
+      height: canvas.height
+    }
+  })
+})
+
 socket.on('sync_players', ({ payload }) => {
   for (const id of Object.keys(payload)) {
     const BACKEND_PLAYER = payload[id]
@@ -98,6 +107,14 @@ socket.on('sync_projectiles', ({ payload }) => {
       PROJECTILES[id].y += item.velocity.y
     }
   }
+
+  // SYNC FRONTEND PROJECTILES WITH BACKEND PROJECTILES ONCE
+  // SOME PROJECTILES HAS BEEN REMOVED FROM BACKEND
+  for (const key in PROJECTILES) {
+    if (!(key in payload)) {
+      delete PROJECTILES[key]
+    }
+  }
 })
 
 let animationId
@@ -138,14 +155,18 @@ function animate() {
 
   for (const id of Object.keys(PROJECTILES)) {
     const projectile = PROJECTILES[id]
-    if (
-      projectile.x + projectile.radius <= 0 ||
-      projectile.x - projectile.radius >= canvas.width ||
-      projectile.y + projectile.radius <= 0 ||
-      projectile.y - projectile.radius >= canvas.height
-    ) {
-      delete PROJECTILES[id]
-    }
+    // I can't remove PROJECTILES for FRONTEND side because of events has been send from BACKEND side
+    // every time object removed, we get new one from BACKEND from sync_projectiles event
+
+    // Instead, we have to send CANVAS size to BACKEND in order to track wether PROJECTILE crossed CANVAS border.
+    // if (
+    //   projectile.x + projectile.radius <= 0 ||
+    //   projectile.x - projectile.radius >= canvas.width ||
+    //   projectile.y + projectile.radius <= 0 ||
+    //   projectile.y - projectile.radius >= canvas.height
+    // ) {
+    //   delete PROJECTILES[id]
+    // }
     projectile.update()
   }
 }

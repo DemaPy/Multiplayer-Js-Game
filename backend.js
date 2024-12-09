@@ -10,6 +10,10 @@ const io = new Server(server, {
   pingInterval: 2000
 })
 
+const CANVAS = {
+  width: 0,
+  height: 0
+}
 const PLAYERS_BACKEND = {}
 const PROJECTILES = {}
 const CONFIG = {
@@ -43,6 +47,15 @@ io.on('connection', (socket) => {
   console.log(socket.id, ' CONNECTED')
   PLAYERS_BACKEND[socket.id] = createPlayer()
 
+  // Listen to init_canvas event and track FOR EVERY PLAYER their CANVAS size
+  socket.on('init_canvas', ({ payload }) => {
+    const { width, height } = payload
+    PLAYERS_BACKEND[socket.id].canvas = {
+      width,
+      height
+    }
+  })
+
   socket.on('keydown', ({ payload }) => {
     const { keyCode, sequenceNumber } = payload
     const playerId = socket.id
@@ -74,8 +87,17 @@ io.on('connection', (socket) => {
   setInterval(() => {
     for (const key in PROJECTILES) {
       const projectile = PROJECTILES[key]
+      const player = PLAYERS_BACKEND[projectile.player_id]
       projectile.x = projectile.x + projectile.velocity.x
       projectile.y = projectile.y + projectile.velocity.y
+      if (
+        projectile.x + projectile.radius <= 0 ||
+        projectile.x - projectile.radius >= player?.canvas.width ||
+        projectile.y + projectile.radius <= 0 ||
+        projectile.y - projectile.radius >= player?.canvas.height
+      ) {
+        delete PROJECTILES[key]
+      }
     }
     io.emit('sync_players', { payload: PLAYERS_BACKEND })
     io.emit('sync_projectiles', { payload: PROJECTILES })
