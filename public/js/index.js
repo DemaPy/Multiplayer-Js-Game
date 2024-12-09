@@ -86,6 +86,15 @@ function animate() {
 
   for (let index = projectiles.length - 1; index >= 0; index--) {
     const line = projectiles[index]
+    console.log(line);
+    if (
+      line.x + line.radius <= 0 ||
+      line.x - line.radius >= canvas.width ||
+      line.y + line.radius <= 0 ||
+      line.y - line.radius >= canvas.height 
+    ) {
+      projectiles.splice(index, 1)
+    }
     line.update()
   }
 }
