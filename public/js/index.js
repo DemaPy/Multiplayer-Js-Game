@@ -73,30 +73,47 @@ socket.on('sync_players', ({ payload }) => {
     }
   }
 })
+
+socket.on('sync_projectiles', ({payload}) => {
+
+})
+
+
 let animationId
 function animate() {
   animationId = requestAnimationFrame(animate)
+  // On each loop render new canvas and fill it with black color
   c.fillStyle = 'rgba(0, 0, 0, 0.1)'
   c.fillRect(0, 0, canvas.width, canvas.height)
 
+  // On each loop iterate over each PLAYER and draw it accordingly to
+  // new coordinates that has been passed from server side and
+  // attached to PLAYERS_OBJECT by SOCKET.ID
   for (const id of Object.keys(PLAYERS_OBJECT)) {
     const player = PLAYERS_OBJECT[id]
     player.draw()
   }
 
-  for (let index = projectiles.length - 1; index >= 0; index--) {
-    const line = projectiles[index]
-    console.log(line);
-    if (
-      line.x + line.radius <= 0 ||
-      line.x - line.radius >= canvas.width ||
-      line.y + line.radius <= 0 ||
-      line.y - line.radius >= canvas.height 
-    ) {
-      projectiles.splice(index, 1)
-    }
-    line.update()
-  }
+  // NOT SAFE??? Some player can override behavior in client code.
+  // On each loop iterate over each projectlines
+  // compute whether line has been reached top, bottom, left right canvas borders
+  // if so, remove projectline from projectlines array
+  // call update method for each proejctline to render it on the screen with moving, since inside
+  // we apply to x and y position new values from previous one + velocity
+  // update method calls draw function,
+  // and everything work inside loop, so each time we increase position for x and y for particular line calling update function.
+  // for (let index = projectiles.length - 1; index >= 0; index--) {
+  //   const line = projectiles[index]
+  //   if (
+  //     line.x + line.radius <= 0 ||
+  //     line.x - line.radius >= canvas.width ||
+  //     line.y + line.radius <= 0 ||
+  //     line.y - line.radius >= canvas.height
+  //   ) {
+  //     projectiles.splice(index, 1)
+  //   }
+  //   line.update()
+  // }
 }
 
 // Should be called only 1 time because inside this function

@@ -10,6 +10,8 @@ const io = new Server(server, {
   pingInterval: 2000
 })
 
+const PLAYERS_BACKEND = {}
+const PROJECTILES = {}
 const CONFIG = {
   velocity: 5
 }
@@ -21,8 +23,6 @@ app.use(express.static('public'))
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html')
 })
-
-const PLAYERS_BACKEND = {}
 
 function createPlayer() {
   return {
@@ -37,10 +37,10 @@ function createPlayer() {
 // x, y, color,
 // x,y position should be received from frontend available place.
 // Notify all players in game.
+let projectLineId = 0
 io.on('connection', (socket) => {
   console.log(socket.id, ' CONNECTED')
   PLAYERS_BACKEND[socket.id] = createPlayer()
-  io.emit('sync_players', { payload: PLAYERS_BACKEND })
 
   socket.on('keydown', ({ payload }) => {
     const { keyCode, sequenceNumber } = payload
@@ -67,13 +67,33 @@ io.on('connection', (socket) => {
         break
     }
     PLAYERS_BACKEND[playerId] = player
-    io.emit('sync_players', { payload: PLAYERS_BACKEND })
-
   })
 
-  // setInterval(() => {
-  //   io.emit('sync_players', { payload: PLAYERS_BACKEND })
-  // }, 15)
+  // On each tick iterate over each PROJECTILE and increment x and y position to move them
+  setInterval(() => {
+    for (const key in PROJECTILES) {
+      const projectile = projectile[key]
+      projectile.x = projectile.x + projectile.velocity.x
+      projectile.y = projectile.y + projectile.velocity.y
+    }
+    io.emit('sync_players', { payload: PLAYERS_BACKEND })
+    io.emit('sync_projectiles', { payload: PLAYERS_BACKEND })
+  }, 15)
+
+  socket.on('shoot', ({ payload }) => {
+    projectLineId++
+    const { angle, x, y } = payload
+    const velocity = {
+      x: Math.cos(angle) * CONFIG.velocity,
+      y: Math.sin(angle) * CONFIG.velocity
+    }
+    PROJECTILES[projectLineId] = {
+      velocity,
+      x,
+      y,
+      player_id: socket.id
+    }
+  })
 
   socket.on('disconnect', (reason) => {
     console.log(socket.id, reason, ' DISCONNECTED')

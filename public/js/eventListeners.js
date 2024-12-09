@@ -1,3 +1,10 @@
+// On click event compute player position
+// based on player position compute angle for projectline
+// create velocity object with x and y coordinates
+// using cos function for X axis and sin function for Y axis
+// in order to get direction of moving
+
+// Emit event to backend to create projectline
 addEventListener('click', (event) => {
   const playerPosition = {
     x: PLAYERS_OBJECT[socket.id].x,
@@ -16,10 +23,22 @@ addEventListener('click', (event) => {
     event.clientY * window.devicePixelRatio - playerPosition.y,
     event.clientX * window.devicePixelRatio - playerPosition.x
   )
-  const velocity = {
-    x: Math.cos(angle) * 5,
-    y: Math.sin(angle) * 5
-  }
+
+  // We can't set velocity on fronend because of cheatin reason
+  // Someine can set values by yourself and have SUPERPOWER
+  // const velocity = {
+  //   x: Math.cos(angle) * 5,
+  //   y: Math.sin(angle) * 5
+  // }
+
+  //
+  socket.emit('shoot', {
+    payload: {
+      angle,
+      x: playerPosition.x,
+      y: playerPosition.y
+    }
+  })
   projectiles.push(
     new Projectile({
       x: playerPosition.x,
