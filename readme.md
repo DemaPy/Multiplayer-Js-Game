@@ -2,3 +2,4 @@ This is a starter project for the [Chris Courses Online Multiplayer Game Tutoria
 
 To get started, download this repo and double click `index.html` to see the single-player game we'll base our multiplayer-game off of.
 # Multiplayer-Js-Game
+<img width="1728" alt="image" src="https://github.com/user-attachments/assets/f129fb06-cb13-4471-b836-a889ef39b194">
