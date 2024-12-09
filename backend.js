@@ -13,7 +13,8 @@ const io = new Server(server, {
 const PLAYERS_BACKEND = {}
 const PROJECTILES = {}
 const CONFIG = {
-  velocity: 5
+  velocity: 5,
+  radius: 5
 }
 
 // Read public folder in the project in order to get acces for scripts
@@ -72,15 +73,20 @@ io.on('connection', (socket) => {
   // On each tick iterate over each PROJECTILE and increment x and y position to move them
   setInterval(() => {
     for (const key in PROJECTILES) {
-      const projectile = projectile[key]
+      const projectile = PROJECTILES[key]
       projectile.x = projectile.x + projectile.velocity.x
       projectile.y = projectile.y + projectile.velocity.y
     }
     io.emit('sync_players', { payload: PLAYERS_BACKEND })
-    io.emit('sync_projectiles', { payload: PLAYERS_BACKEND })
+    io.emit('sync_projectiles', { payload: PROJECTILES })
   }, 15)
 
   socket.on('shoot', ({ payload }) => {
+    const playerId = socket.id
+    const player = PLAYERS_BACKEND[playerId]
+    if (!player) {
+      return
+    }
     projectLineId++
     const { angle, x, y } = payload
     const velocity = {
@@ -91,7 +97,9 @@ io.on('connection', (socket) => {
       velocity,
       x,
       y,
-      player_id: socket.id
+      player_id: socket.id,
+      color: player.color,
+      radius: CONFIG.radius
     }
   })
 

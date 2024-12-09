@@ -39,13 +39,4 @@ addEventListener('click', (event) => {
       y: playerPosition.y
     }
   })
-  projectiles.push(
-    new Projectile({
-      x: playerPosition.x,
-      y: playerPosition.y,
-      radius: 5,
-      color: 'white',
-      velocity
-    })
-  )
 })

@@ -3,7 +3,7 @@ const c = canvas.getContext('2d')
 const socket = io()
 
 const PLAYERS_OBJECT = {}
-const projectiles = []
+let PROJECTILES = {}
 const playerInputs = []
 const CONFIG = {
   velocity: 5
@@ -74,10 +74,31 @@ socket.on('sync_players', ({ payload }) => {
   }
 })
 
-socket.on('sync_projectiles', ({payload}) => {
-
+socket.on('sync_projectiles', ({ payload }) => {
+  for (const id of Object.keys(payload)) {
+    const item = payload[id]
+    // Add projectile to FRONTEND PROJECTILES OBJECT if it is not exist.
+    // If projectile exist, just update it position
+    if (!(id in PROJECTILES)) {
+      PROJECTILES[id] = new Projectile(item)
+    } else {
+      // Update projectile position based on BACKEND computed velocity
+      // 1. User click in the screen
+      // 2. Get user location inside event handler
+      // 3. Compute angle
+      // 4. Emit event to backend
+      // 5. Get user id, who emited event
+      // 6. Retrieve color
+      // 7. Create velocity object depending from provided values ANGLE from frontend
+      // 8. Initialize projectile on the BACKEND
+      // 9. Iterate over each PROJECTILE and update x,y position based on velocity
+      // 10. Emit event to frontend inside BACKEND ticker
+      // 11. Create new projectile on FORNTEND PROJECTILES POBJECT or just update position from BACKEND OBJECT if it is already exist
+      PROJECTILES[id].x += item.velocity.x
+      PROJECTILES[id].y += item.velocity.y
+    }
+  }
 })
-
 
 let animationId
 function animate() {
@@ -114,6 +135,19 @@ function animate() {
   //   }
   //   line.update()
   // }
+
+  for (const id of Object.keys(PROJECTILES)) {
+    const projectile = PROJECTILES[id]
+    if (
+      projectile.x + projectile.radius <= 0 ||
+      projectile.x - projectile.radius >= canvas.width ||
+      projectile.y + projectile.radius <= 0 ||
+      projectile.y - projectile.radius >= canvas.height
+    ) {
+      delete PROJECTILES[id]
+    }
+    projectile.update()
+  }
 }
 
 // Should be called only 1 time because inside this function
