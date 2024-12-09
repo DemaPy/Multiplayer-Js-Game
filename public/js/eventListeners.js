@@ -9,11 +9,12 @@ addEventListener('click', (event) => {
   // new Projectile({
   //   x: canvas.width / 2,
   //   y: canvas.height / 2,
+  // })
   // - canvas.height / 2
   // - canvas.width / 2
   const angle = Math.atan2(
-    event.clientY * window.devicePixelRatio - playerPosition.y,
-    event.clientX * window.devicePixelRatio - playerPosition.x
+    event.clientY * window.devicePixelRatio - playerPosition.x,
+    event.clientX * window.devicePixelRatio - playerPosition.y
   )
   const velocity = {
     x: Math.cos(angle) * 5,

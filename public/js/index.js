@@ -2,6 +2,7 @@ const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
 const socket = io()
 
+const PLAYERS_OBJECT = {}
 const projectiles = []
 const playerInputs = []
 const CONFIG = {
@@ -21,9 +22,6 @@ const y = canvas.height / 2
 // Create player in the center coordinates of the screen
 // width / 2
 // height / 2
-
-// Players store
-const PLAYERS_OBJECT = {}
 
 // Listen to socket events
 socket.on('sync_players', ({ payload }) => {
@@ -74,7 +72,6 @@ socket.on('sync_players', ({ payload }) => {
       delete PLAYERS_OBJECT[key]
     }
   }
-  animate()
 })
 let animationId
 function animate() {
@@ -88,11 +85,13 @@ function animate() {
   }
 
   for (let index = projectiles.length - 1; index >= 0; index--) {
-    const line = projectiles[index];
+    const line = projectiles[index]
     line.update()
   }
 }
 
+// Should be called only 1 time because inside this function
+// we call requestAnimationFrame which is gonna be call function animate every 16.67 seconds.
 animate()
 
 const KEYS = {
@@ -204,7 +203,6 @@ window.addEventListener('keydown', (ev) => {
     default:
       break
   }
-  animate()
 })
 
 window.addEventListener('blur', (ev) => {
@@ -235,5 +233,4 @@ window.addEventListener('keyup', (ev) => {
     default:
       break
   }
-  animate()
 })
